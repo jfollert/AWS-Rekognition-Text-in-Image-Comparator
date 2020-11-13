@@ -33,3 +33,9 @@ python comparator.py -b <bucket> -c <controlfile> [-t <testfile> | -T <testdir>]
 **NOTA-1:** Para su ejecución, el programa requiere obligatoriamente recibir argumentos para `<bucket>` y `<controlfile>`
 
 **NOTA-2:** Solamente se recibe un nombre de imagen a probar (`<testfile>`) o un nombre de directorio (`<testdir>`), no ambos. En caso de no recibir ninguno, el programa utilizará el directorio raíz del bucket como `<testdir>`
+
+## Logs
+Para efectos de las pruebas, cada vez que realiza con éxito una comparación se actualiza el archivo `comparator.log`, en el cual cada registro presenta la siguiente estructura:
+```
+mm/dd/yyyy hh:mm:ss - [<bucket>] <controlfile>, <testfile> -> <result> [<not-found-words>]
+```

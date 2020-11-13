@@ -30,7 +30,7 @@ def listBucketImages(s3, bucket, dir, control_img):
     for obj in all_objects['Contents']:
         key = obj['Key']
         path = key.split("/")
-        #Verificar que en caso de que no se haya especificado un directorio solo se considere la raíz del backet
+        # Verificar que en caso de que no se haya especificado un directorio solo se considere la raíz del bucket
         if len(path) != 1 and dir == '':
             continue
         filename = path[-1]
