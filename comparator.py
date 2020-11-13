@@ -9,12 +9,14 @@ IGNORED_CHARS = ['¡', '!', ':', ';', ',', '.', '@', '/', '$', '%', '-', '_', '+
 AUTHORIZED_EXTS = ["jpg", "jpeg", "png"]
 
 def compareText(test_words, control_words):
-    print(test_words)
-    for word in test_words:
-        if word not in control_words:
-            print(word)
-            return "false"
-    return "true"
+    not_found = []
+    for word in control_words:
+        if word not in test_words:
+            not_found.append(word)
+    if len(not_found) == 0:
+        return "true", not_found
+    else:
+        return "false", not_found
 
 def isImageExtension(filename):
     extension = filename.split('.')[-1]
@@ -37,7 +39,6 @@ def listBucketImages(s3, bucket, dir, control_img):
             # Verificar no considerar la imagen de control para test.
             if key != control_img:
                 test_img.append(key)
-    print(test_img)
     return test_img
 
 def getArgs():
@@ -88,7 +89,7 @@ def getArgs():
         print("The control image file must have a .jpg .jpeg or .png extension")
         print("for help use -h option")
         sys.exit(2)
-    
+
     # Verificar que no se recibieron simultaneamente nombre de imagen y directorio para pruebas.
     if test_img != '' and test_dir != '':
         print("Only one filename or one directory can be received for testing, not both")
@@ -96,12 +97,12 @@ def getArgs():
         print ('comparator.py -b <bucket> -c <controlfile> [-t <testfile> | -T <testdir>]')
         print("for help use -h option")
         sys.exit(2)
+
     
     return bucket, control_img, test_img, test_dir
 
 def rekognitionTextDetection(client, bucket, image):
-    response = client.detect_text(Image = {'S3Object': {'Bucket': bucket,'Name': image}}, 
-                                Filters={'WordFilter': {'MinConfidence': MIN_CONFIDENCE}})
+    response = client.detect_text(Image = {'S3Object': {'Bucket': bucket,'Name': image}}, Filters={'WordFilter': {'MinConfidence': MIN_CONFIDENCE}})
     textDetections = response['TextDetections']
     detected = []
     for text in textDetections:
@@ -134,7 +135,7 @@ if __name__ == "__main__":
         test_list = listBucketImages(s3, bucket, test_dir, control_img)
     # En caso contrario encapsulamos el nombre de la imagen en una lista para iterarlo
     else:
-        test_list = list(test_img)
+        test_list = [test_img]
 
     # Instanciar cliente de AWS Rekognition
     client = boto3.client('rekognition')
@@ -142,17 +143,16 @@ if __name__ == "__main__":
     # Reconocer texto en la imagen de control
     control_words = rekognitionTextDetection(client, bucket, control_img)
     
-    #Iterar
+    # Iterar sobre la lista de imagenes a testear
     for image in test_list:
-        #Reconocer el texto de la imagen a probar
+        # Reconocer el texto de la imagen a probar
         test_words = rekognitionTextDetection(client, bucket, image)
 
         # Comparar el texto en las imagenes
-        resultado = compareText(test_words, control_words)
+        resultado, not_found = compareText(test_words, control_words)
         print(resultado)
     
-        #Genera el mensaje de log y actualiza el archivo
-        correct_log = '[%s] %s, %s -> %s'
-        logger.info(correct_log, bucket, control_img, image, resultado)
+        # Genera el mensaje de log y actualiza el archivo
+        correct_log = '[%s] %s, %s -> %s %s'
+        logger.info(correct_log, bucket, control_img, image, resultado, not_found)
 
-    sys.exit()

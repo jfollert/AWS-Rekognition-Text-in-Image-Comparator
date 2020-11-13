@@ -6,7 +6,7 @@ Para el almacenamiento de las imagenes se utilizará **S3** y para la extracció
 - El programa puede procesar un máximo 50 palabras por imagen.
 - El programa no diferencia entre mayúsculas y minúsculas.
 - Se ignoraran los siguientes caracteres para efecto de la comparación: `¡!:;,.@/$%-_+*#'`
-- El texto debe estar dentro de una orientación de +/- 90° dentro de la imagen
+- El texto debe estar dentro de una orientación de más o menos 90 grados dentro de la imagen
 - Se define la **confianza mínima** para la detección de texto como un 97%
 - Las extensiones para archivos de imagen permitidos son: `.png, .jpg, .jpeg`
 
